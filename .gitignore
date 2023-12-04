@@ -1,0 +1,6 @@
+.vscode/
+build/
+input/
+misc/
+.remedybg/
+*.bat
