@@ -1,7 +1,7 @@
 # Advent of Code 2023 in C (C/C++ compiler)
 
 ## Introduction
-I'm hacking together the 2021 and 2022 folders I have so I might have to update this readme as I go.
+In short, I'm just having a bit of fun playing around in C. My code won't be very optimized, it won't be written fast and I'm winning no prizes for the code itself. I am only leaning on the C standard library. I have made my own lexer.h that I use, it was not written specifically for Advent of Code, but I like using it for it.
 
 ## Compiling
 I compile with **Microsoft (R) C/C++ Optimizing Compiler Version 19.12.25835 for x64**.
