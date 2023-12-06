@@ -33,7 +33,8 @@ Result Part 2: 73074886 (1 ms, 2875751 cycles passed)
 - Day 04 -
 Result Part 1: 22897, Result Part 2: 5095824 (0 ms, 1330647 cycles passed)
 
-
+- Day 05 -
+Results Missing in Action
 
 - Day 06 -
 Result Part 1: 140220 (0 ms, 381469 cycles passed)
