@@ -1,5 +1,4 @@
 #include "common.h"
-#include "lexer.h"
 
 char *digitsInText[] =
 {

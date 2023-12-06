@@ -67,7 +67,7 @@ create_schematic(file_data file, u64 width, u64 height)
         }
     }
 
-    lexer_tokenizer tokenizer = { .at = file.data };
+    lexer_tokenizer tokenizer = lexer_tokenizer_create(file.data);
     lexer_token token = lexer_get_token(&tokenizer);
     u64 y = 0;
     

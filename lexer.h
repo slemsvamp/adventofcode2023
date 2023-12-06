@@ -47,6 +47,8 @@ typedef enum lexer_token_type
     LEXER_TOKEN_TYPE_close_brace,
     LEXER_TOKEN_TYPE_open_bracket,
     LEXER_TOKEN_TYPE_close_bracket,
+    LEXER_TOKEN_TYPE_less_than,
+    LEXER_TOKEN_TYPE_greater_than,
     LEXER_TOKEN_TYPE_period,
     LEXER_TOKEN_TYPE_dollar,
     LEXER_TOKEN_TYPE_comma,
@@ -55,33 +57,41 @@ typedef enum lexer_token_type
     LEXER_TOKEN_TYPE_forward_slash,
     LEXER_TOKEN_TYPE_equals,
     LEXER_TOKEN_TYPE_asterisk,
+    LEXER_TOKEN_TYPE_plus,
+    LEXER_TOKEN_TYPE_dash,
     LEXER_TOKEN_TYPE_string,
     LEXER_TOKEN_TYPE_newline,
     LEXER_TOKEN_TYPE_number,
+    LEXER_TOKEN_TYPE_special_sign,
     LEXER_TOKEN_TYPE_end
 } lexer_token_type;
 
 char *__lexer_token_type_names[] = {
-    "Unknown",
-    "Identifier",
-    "Open Parenthesis",
-    "Close Parenthesis",
-    "Open Brace",
-    "Close Brace",
-    "Open Bracket",
-    "Close Bracket",
-    "Period",
-    "Dollar",
-    "Comma",
-    "Colon",
-    "Semi Colon",
-    "Forward Slash",
-    "Equals",
-    "Asterisk",
-    "String",
-    "Newline",
-    "Number",
-    "End"
+    "LEXER_TOKEN_TYPE_unknown",
+    "LEXER_TOKEN_TYPE_identifier",
+    "LEXER_TOKEN_TYPE_open_parenthesis",
+    "LEXER_TOKEN_TYPE_close_parenthesis",
+    "LEXER_TOKEN_TYPE_open_brace",
+    "LEXER_TOKEN_TYPE_close_brace",
+    "LEXER_TOKEN_TYPE_open_bracket",
+    "LEXER_TOKEN_TYPE_close_bracket",
+    "LEXER_TOKEN_TYPE_less_than",
+    "LEXER_TOKEN_TYPE_greater_than",
+    "LEXER_TOKEN_TYPE_period",
+    "LEXER_TOKEN_TYPE_dollar",
+    "LEXER_TOKEN_TYPE_comma",
+    "LEXER_TOKEN_TYPE_colon",
+    "LEXER_TOKEN_TYPE_semi_colon",
+    "LEXER_TOKEN_TYPE_forward_slash",
+    "LEXER_TOKEN_TYPE_equals",
+    "LEXER_TOKEN_TYPE_asterisk",
+    "LEXER_TOKEN_TYPE_plus",
+    "LEXER_TOKEN_TYPE_dash",
+    "LEXER_TOKEN_TYPE_string",
+    "LEXER_TOKEN_TYPE_newline",
+    "LEXER_TOKEN_TYPE_number",
+    "LEXER_TOKEN_TYPE_special_sign",
+    "LEXER_TOKEN_TYPE_end"
 };
 
 typedef struct lexer_token
@@ -89,14 +99,29 @@ typedef struct lexer_token
     lexer_token_type type;
     char *text;
     size_t length;
+    u32 row;
+    u32 col;
 } lexer_token;
 
 typedef struct lexer_tokenizer
 {
     char *at;
+    char *bol;
+    u32 row;
 } lexer_tokenizer;
 
 u8 __lexer_newline = LEXER_NEWLINE_CRLF;
+
+lexer_tokenizer
+lexer_tokenizer_create(char *at)
+{
+    return (lexer_tokenizer)
+    {
+        .at = at,
+        .bol = at,
+        .row = 0
+    };
+}
 
 inline b32
 lexer_token_is_end(lexer_token token)
@@ -122,16 +147,25 @@ lexer_print_token(lexer_token token)
         printf("{Token Type=\"%s\" Value=\"%.*s\"}\r\n", __lexer_token_type_names[token.type], token.length, token.text);
 }
 
+#if 0
+#define isalpha(c) (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
+#define isdigit(c) ((c >= '0') && (c <= '9'))
+#else
+#include <ctype.h>
+#define isalpha(c) isalpha(c)
+#define isdigit(c) isdigit(c)
+#endif
+
 inline b32
 __lexer_char_is_alpha(char c)
 {
-    return (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')));
+    return isalpha(c);
 }
 
 inline b32
 __lexer_char_is_number(char c)
 {
-    return ((c >= '0') && (c <= '9'));
+    return isdigit(c);
 }
 
 inline b32
@@ -140,6 +174,63 @@ __lexer_char_is_whitespace(char c)
     return (c == ' ') || (c == '\t');
 }
 
+inline b32
+__lexer_char_is_newline(char c)
+{
+    return c == '\n';
+}
+
+#if 1
+void
+__lexer_skip(lexer_tokenizer *t, u32 flags)
+{   
+    for (;;)
+    {
+        b32 acted = false;
+        if (flags & LEXER_SKIP_whitespace)
+        {
+            b32 isWhitespace = __lexer_char_is_whitespace(t->at[0]);
+            if (isWhitespace)
+            {
+                b32 isNewline = __lexer_char_is_newline(t->at[0]);
+                t->at++;
+                
+                if (isNewline)
+                {
+                    t->bol = t->at;
+                    t->row += 1; 
+                }
+                acted = true;
+            }
+        }
+        
+        if (flags & LEXER_SKIP_comments)
+        {
+            if (t->at[0] && t->at[1] && t->at[0] == '/' && t->at[1] == '/')
+            {
+                t->at+=2;
+                while (t->at[0] && t->at[0] != '\n')
+                {
+                    t->at++;
+                }
+                acted = true;
+            }
+            else if (t->at[0] && t->at[1] && t->at[0] == '/' && t->at[1] == '*')
+            {
+                t->at+=2;
+                while (t->at[0] && t->at[1] && !(t->at[0] == '*' && t->at[1] == '/'))
+                    t->at++;
+                if (t->at[0] == '*')
+                    t->at+=2;
+
+                acted = true;
+            }
+        }
+        
+        if (!acted) break;
+    }
+}
+#else
 void
 __lexer_skip(lexer_tokenizer *t, u32 flags)
 {   
@@ -166,6 +257,7 @@ __lexer_skip(lexer_tokenizer *t, u32 flags)
         else break;
     }
 }
+#endif
 
 inline lexer_token
 __lexer_token_create(lexer_token_type type, char *text, size_t length)
@@ -189,25 +281,41 @@ lexer_get_token(lexer_tokenizer *t)
     /** @textlength: */ 1
     );
 
+    result.row = t->row;
+    result.col = (u32)(t->at - t->bol);
+
     char c = t->at[0];
     t->at++;
+
     switch (c)
     {
         case '\0': result.type = LEXER_TOKEN_TYPE_end; break;
-        case '*': result.type = LEXER_TOKEN_TYPE_asterisk; break;
         case '{': result.type = LEXER_TOKEN_TYPE_open_brace; break;
         case '}': result.type = LEXER_TOKEN_TYPE_close_brace; break;
         case '[': result.type = LEXER_TOKEN_TYPE_open_bracket; break;
         case ']': result.type = LEXER_TOKEN_TYPE_close_bracket; break;
         case '(': result.type = LEXER_TOKEN_TYPE_open_parenthesis; break;
         case ')': result.type = LEXER_TOKEN_TYPE_close_parenthesis; break;
-        case '.': result.type = LEXER_TOKEN_TYPE_period; break;
+        case '<': result.type = LEXER_TOKEN_TYPE_less_than; break;
+        case '>': result.type = LEXER_TOKEN_TYPE_greater_than; break;
         case '$': result.type = LEXER_TOKEN_TYPE_dollar; break;
+        case '.': result.type = LEXER_TOKEN_TYPE_period; break;
         case ',': result.type = LEXER_TOKEN_TYPE_comma; break;
         case ':': result.type = LEXER_TOKEN_TYPE_colon; break;
         case ';': result.type = LEXER_TOKEN_TYPE_semi_colon; break;
+        case '*': result.type = LEXER_TOKEN_TYPE_asterisk; break;
         case '/': result.type = LEXER_TOKEN_TYPE_forward_slash; break;
+        case '+': result.type = LEXER_TOKEN_TYPE_plus; break;
+        case '-': result.type = LEXER_TOKEN_TYPE_dash; break;
         case '=': result.type = LEXER_TOKEN_TYPE_equals; break;
+        
+        case '#':
+        case '~':
+        case '^':
+        case '|':
+            result.type = LEXER_TOKEN_TYPE_special_sign;
+            break;        
+        
         case '\r':
         {
             switch (__lexer_newline)
@@ -284,6 +392,28 @@ lexer_get_token(lexer_tokenizer *t)
     }
 
     return result;
+}
+
+void
+lexer_token_error_report(lexer_token token)
+{
+    u32 margin = 0;
+    if (token.col > 16)
+    {
+        margin = token.col - 16;
+    }
+    char *findEnd = token.text;
+    while (*findEnd != '\0' && *findEnd != '\n')
+        findEnd++;
+    u32 length = 128;
+    if ((u32)(findEnd - token.text) < length)
+        length = (u32)(findEnd - token.text);
+
+    printf("------");
+    for (u32 marginIndex = 0; marginIndex < margin; marginIndex++)
+        printf("-");
+    printf("v\n");
+    printf("Line: %.*s\n", length, token.text - margin);
 }
 
 lexer_token

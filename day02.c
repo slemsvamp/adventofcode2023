@@ -23,7 +23,7 @@ run_game(file_data file, b32 withLocalMax)
     u64 localMaxSum = 0;
     game shown = {0};
 
-    lexer_tokenizer tokenizer = { .at = file.data };
+    lexer_tokenizer tokenizer = lexer_tokenizer_create(file.data);
     lexer_token token = __lexer_token_create(LEXER_TOKEN_TYPE_unknown, 0, 0);
 
     while (!lexer_token_is_end(token))
