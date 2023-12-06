@@ -65,7 +65,7 @@ process_cards(file_data file)
 {
     results result = {0};
 
-    lexer_tokenizer tokenizer = { .at = file.data };
+    lexer_tokenizer tokenizer = lexer_tokenizer_create(file.data);
     lexer_token token = __lexer_token_create(LEXER_TOKEN_TYPE_unknown, 0, 0);
 
     card currentCard = init_card(256);
