@@ -279,7 +279,7 @@ dict_hash(char *key)
 internal void
 dict_add(dictionary *dict, char *key, void *data)
 {
-    u32 nodeIndex = DICT_Hash(key) % dict->slots;
+    u32 nodeIndex = dict_hash(key) % dict->slots;
 
     dictionary_node *node = *(dict->nodes + nodeIndex);
     dictionary_node *newNode = (dictionary_node*)malloc(sizeof(dictionary_node));
@@ -302,7 +302,7 @@ dict_add(dictionary *dict, char *key, void *data)
 internal dictionary_node *
 dict_get(dictionary *dict, char *key)
 {
-    u32 nodeIndex = DICT_Hash(key) % dict->slots;
+    u32 nodeIndex = dict_hash(key) % dict->slots;
     dictionary_node *node = *(dict->nodes + nodeIndex);
 
     if (node == NULL)
