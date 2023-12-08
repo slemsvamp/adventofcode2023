@@ -1,15 +1,11 @@
 #include "common.h"
 #include "lexer.h"
 
-char cardNames[] =
+typedef enum parse_hands_mode
 {
-    '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'
-};
-
-u32 cardIndices[] =
-{
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
-};
+    PARSE_HANDS_MODE_j_is_for_knight,
+    PARSE_HANDS_MODE_j_is_for_joker
+} parse_hands_mode;
 
 typedef enum hand_type
 {
@@ -49,29 +45,48 @@ typedef struct game
     u64 count;
 } game;
 
-dictionary dict;
+dictionary _dict;
 
 void
-initialize_dictionary()
+initialize_dictionary(parse_hands_mode mode)
 {
-    dict_init(&dict, 20);
-    dict_add(&dict, "A", (u32 *)(cardIndices + 12));
-    dict_add(&dict, "K", (u32 *)(cardIndices + 11));
-    dict_add(&dict, "Q", (u32 *)(cardIndices + 10));
-    dict_add(&dict, "J", (u32 *)(cardIndices + 9));
-    dict_add(&dict, "T", (u32 *)(cardIndices + 8));
-    dict_add(&dict, "9", (u32 *)(cardIndices + 7));
-    dict_add(&dict, "8", (u32 *)(cardIndices + 6));
-    dict_add(&dict, "7", (u32 *)(cardIndices + 5));
-    dict_add(&dict, "6", (u32 *)(cardIndices + 4));
-    dict_add(&dict, "5", (u32 *)(cardIndices + 3));
-    dict_add(&dict, "4", (u32 *)(cardIndices + 2));
-    dict_add(&dict, "3", (u32 *)(cardIndices + 1));
-    dict_add(&dict, "2", (u32 *)(cardIndices));
+    if (_dict.nodes) free(_dict.nodes);
+    
+    dict_init(&_dict, 20);
+    
+    if (mode == PARSE_HANDS_MODE_j_is_for_joker)
+        dict_add(&_dict, "J", 1);
+    
+    u32 value = 2;
+        
+    dict_add(&_dict, "2", value++);
+    dict_add(&_dict, "3", value++);
+    dict_add(&_dict, "4", value++);
+    dict_add(&_dict, "5", value++);
+    dict_add(&_dict, "6", value++);
+    dict_add(&_dict, "7", value++);
+    dict_add(&_dict, "8", value++);
+    dict_add(&_dict, "9", value++);
+    dict_add(&_dict, "T", value++);
+    
+    if (mode == PARSE_HANDS_MODE_j_is_for_knight)
+        dict_add(&_dict, "J", value++);
+    else
+        value++;
+    
+    dict_add(&_dict, "Q", value++);
+    dict_add(&_dict, "K", value++);
+    dict_add(&_dict, "A", value++);
+}
+
+u32
+get_card_value(char card)
+{
+    return (u32)(dict_get(&_dict, (char[]) { card, 0 })->data);
 }
 
 hand
-parse_hand(char *line)
+parse_hand(char *line, parse_hands_mode mode)
 {
     hand result =
     {
@@ -83,7 +98,7 @@ parse_hand(char *line)
     u32 sortedHand[HAND_SIZE] = {0};
 
     for (u32 cardIndex = 0; cardIndex < HAND_SIZE; cardIndex++)
-        sortedHand[cardIndex] = *(u32 *)(dict_get(&dict, (char[]) { line[cardIndex], 0 })->data);
+        sortedHand[cardIndex] = get_card_value(line[cardIndex]);
     qs_sort_u32(sortedHand, 0, 4);
 
     u64 copyCount = 0;
@@ -95,6 +110,13 @@ parse_hand(char *line)
         u32 lookAhead = 1;
         u32 lookFor = sortedHand[lookupIndex];
         u32 amount = 1;
+        
+        if (lookFor == 1 /* VALUE OF JOKER */)
+        {
+            lookupIndex++;
+            continue;
+        }
+
         while (lookupIndex + lookAhead < HAND_SIZE && sortedHand[lookupIndex + lookAhead] == lookFor)
         {
             amount++;
@@ -118,8 +140,64 @@ parse_hand(char *line)
     else if (numberOfCopies[4] == 2)
         result.type = HAND_TYPE_one_pair;
 
-    // for (u32 i = 0; i < 5; i++)
-    //     printf("NumberOfCopies: %d\r\n", numberOfCopies[i]);
+    if (mode == PARSE_HANDS_MODE_j_is_for_joker)
+    {
+        u64 numberOfJokers = 0;
+        for (u64 jokerSearchIndex = 0; jokerSearchIndex < HAND_SIZE; jokerSearchIndex++)
+            if (sortedHand[jokerSearchIndex] == 1)
+                numberOfJokers++;
+
+        if (numberOfJokers > 0)
+        {
+            // UPGRADE
+            switch (result.type)
+            {
+                case HAND_TYPE_high_card:
+                    // high card + 1 Joker = one pair
+                    // high card + 2 Joker = three of a kind
+                    // high card + 3 Joker = four of a kind
+                    // high card + 4 Joker = five of a kind
+                    // high card + 5 Joker = five of a kind
+                    switch (numberOfJokers)
+                    {
+                        case 1: result.type = HAND_TYPE_one_pair; break;
+                        case 2: result.type = HAND_TYPE_three_of_a_kind; break;
+                        case 3: result.type = HAND_TYPE_four_of_a_kind; break;
+                        case 4: result.type = HAND_TYPE_five_of_a_kind; break;
+                        case 5: result.type = HAND_TYPE_five_of_a_kind; break;
+                    }
+                break;
+                case HAND_TYPE_one_pair:
+                    // one pair + 1 Joker = three of a kind
+                    // one pair + 2 Joker = four of a kind
+                    // one pair + 3 Joker = five of a kind
+                    switch (numberOfJokers)
+                    {
+                        case 1: result.type = HAND_TYPE_three_of_a_kind; break;
+                        case 2: result.type = HAND_TYPE_four_of_a_kind; break;
+                        case 3: result.type = HAND_TYPE_five_of_a_kind; break;
+                    }
+                break;
+                case HAND_TYPE_two_pair:
+                    // two pair + 1 Joker = full house
+                    result.type = HAND_TYPE_full_house;
+                break;
+                case HAND_TYPE_three_of_a_kind:
+                    // three of a kind + 1 Joker = four of a kind
+                    // three of a kind + 2 Joker = five of a kind
+                    switch (numberOfJokers)
+                    {
+                        case 1: result.type = HAND_TYPE_four_of_a_kind; break;
+                        case 2: result.type = HAND_TYPE_five_of_a_kind; break;
+                    }
+                break;
+                case HAND_TYPE_four_of_a_kind:
+                    // four of a kind + 1 Joker = five of a kind
+                    result.type = HAND_TYPE_five_of_a_kind;
+                break;
+            }
+        }
+    }
 
     memcpy(result.cards, line, HAND_SIZE * sizeof(char));
 
@@ -128,17 +206,17 @@ parse_hand(char *line)
     return result;
 }
 
-void
-print_hand(hand h)
-{
-    printf("Hand: ");
-    for (u32 i = 0; i < 5; i++)
-        printf("%c", h.cards[i]);
-    printf(", %lld -> %s\r\n", h.bid, hand_type_names[h.type]);
-}
+// void
+// print_hand(hand h)
+// {
+//     printf("Hand: ");
+//     for (u32 i = 0; i < 5; i++)
+//         printf("%c", h.cards[i]);
+//     printf(", %lld -> %s\r\n", h.bid, hand_type_names[h.type]);
+// }
 
 game
-parse_hands()
+parse_hands(parse_hands_mode mode)
 {
     game result = {0};
 
@@ -158,7 +236,7 @@ parse_hands()
         assert(lineLength <= file.data + file.size - at);
         memcpy(buffer, at, lineLength);
         buffer[lineLength] = 0;
-        result.hands[result.count++] = parse_hand(buffer);
+        result.hands[result.count++] = parse_hand(buffer, mode);
         at += lineLength + 2;
     }
     
@@ -177,14 +255,11 @@ swap_hands(hand *first, hand *second)
 s32
 compare_hands(hand first, hand second)
 {
-    // return -1 if first is less valuable than second
-    // return 0 if the same value
-    // return 1 if second is less valueable than first
     u64 result = 0;
     for (u64 cardIndex = 0; cardIndex < HAND_SIZE; cardIndex++)
     {
-        u32 firstHandCardValue = *(u32 *)(dict_get(&dict, (char[]) { first.cards[cardIndex], 0 })->data);
-        u32 secondHandCardValue = *(u32 *)(dict_get(&dict, (char[]) { second.cards[cardIndex], 0 })->data);
+        u32 firstHandCardValue = get_card_value(first.cards[cardIndex]);
+        u32 secondHandCardValue =  get_card_value(second.cards[cardIndex]);
         if (firstHandCardValue < secondHandCardValue)
             return -1;
         else if (secondHandCardValue < firstHandCardValue)
@@ -194,7 +269,7 @@ compare_hands(hand first, hand second)
 }
 
 u64
-part_1(game entireGame)
+calculate_game(game entireGame)
 {
     hand *handsByType[HAND_TYPE_COUNT] = {0};
     u64 handsByTypeCount[HAND_TYPE_COUNT] = {0};
@@ -209,9 +284,6 @@ part_1(game entireGame)
         u64 handTypeIndex = (u64)entireGame.hands[gameIndex].type;
         (handsByType[handTypeIndex])[handsByTypeCount[handTypeIndex]++] = entireGame.hands[gameIndex];
     }
-
-    // for (u64 byHandTypeIndex = 0; byHandTypeIndex < HAND_TYPE_COUNT; byHandTypeIndex++)
-    //     printf("Type %s: %d hand(s)\r\n", hand_type_names[byHandTypeIndex], handsByTypeCount[byHandTypeIndex]);
 
     // 2. SORTING BY RANK
     for (u64 byHandTypeIndex = HAND_TYPE_COUNT - 1; byHandTypeIndex >= 0 && byHandTypeIndex < HAND_TYPE_COUNT; byHandTypeIndex--)
@@ -240,7 +312,6 @@ part_1(game entireGame)
     // 3. CALCULATING WITH RANK
     u64 result = 0;
     u64 rank = 0;
-    printf("Woop!\r\n");
     for (u64 byHandTypeIndex = HAND_TYPE_COUNT - 1; byHandTypeIndex >= 0 && byHandTypeIndex < HAND_TYPE_COUNT; byHandTypeIndex--)
     {
         hand *hands = handsByType[byHandTypeIndex];
@@ -248,8 +319,8 @@ part_1(game entireGame)
         for (u64 byHandIndex = 0; byHandIndex < handsByTypeCount[byHandTypeIndex]; byHandIndex++)
         {
             rank++;
-            printf("Rank: %lld, ", rank);
-            print_hand(hands[byHandIndex]);
+            // printf("Rank: %lld, ", rank);
+            // print_hand(hands[byHandIndex]);
             result += rank * hands[byHandIndex].bid;
         }
     }
@@ -257,34 +328,30 @@ part_1(game entireGame)
     return result;
 }
 
-u64
-part_2(game entireGame)
-{
-    return 0;
-}
-
 u32
 main(s32 argumentCount, char *arguments[])
 {
-    initialize_dictionary();
+    initialize_dictionary(PARSE_HANDS_MODE_j_is_for_knight);
 
-    game entireGame = parse_hands();
+    game entireGameKnightMode = parse_hands(PARSE_HANDS_MODE_j_is_for_knight);
 
     clock_t startTime = clock();
     u64 startCycles = __rdtsc();
 
-    u64 resultPart1 = part_1(entireGame);
+    u64 resultPart1 = calculate_game(entireGameKnightMode);
 
     clock_t part1Time = clock();
     u64 part1Cycles = __rdtsc();
 
-    u64 resultPart2 = part_2(entireGame);
+    initialize_dictionary(PARSE_HANDS_MODE_j_is_for_joker);
+
+    game entireGameJokerMode = parse_hands(PARSE_HANDS_MODE_j_is_for_joker);
+
+    u64 resultPart2 = calculate_game(entireGameJokerMode);
 
     clock_t endTime = clock();
     u64 endCycles = __rdtsc();
 
-    // 250798297 too low
-    // 251106089
     debug_log("- Day 07 -\n");
     debug_log("Result Part 1: %lld (%d ms, %lld cycles passed)\n", resultPart1, (part1Time - startTime) * 1000 / CLOCKS_PER_SEC, (part1Cycles - startCycles));
     debug_log("Result Part 2: %lld (%d ms, %lld cycles passed)\n", resultPart2, (endTime - part1Time) * 1000 / CLOCKS_PER_SEC, (endCycles - part1Cycles));

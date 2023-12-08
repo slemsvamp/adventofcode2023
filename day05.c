@@ -429,6 +429,9 @@ part_2()
 u32
 main(s32 argumentCount, char *arguments[])
 {
+    printf("UNDER MAINTENANCE!\r\n");
+    return 1;
+
     clock_t startTime = clock();
     u64 startCycles = __rdtsc();
 
