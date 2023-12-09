@@ -5,7 +5,7 @@ In short, I'm just having a bit of fun playing around in C. My code won't be ver
 
 I have a define called SILENT which is not very user-friendly. It is just an easy way for me to leave my logging around but not have them in my result runs. I don't expect anyone to USE my code, but I felt like I wanted to explain myself there.
 
-## Compiling
+## Compiling and Running
 I compile with **Microsoft (R) C/C++ Optimizing Compiler Version 19.12.25835 for x64**.
 (*I noticed that I'm suddenly using an older compiler for some reason, haven't bothered checking why..*)
 ```
@@ -15,6 +15,9 @@ cl -MTd -nologo -Gm- -Od -Oi -WX -W0 -wd4100 -FC -Z7 -D_CRT_SECURE_NO_WARNINGS d
 Optimized:
 cl -MTd -nologo -Gm- -O3 -Oi -WX -W0 -wd4100 -FC -Z7 -D_CRT_SECURE_NO_WARNINGS day01.c /link -opt:ref user32.lib
 ```
+
+# No seriously, you're going to run this garbage?
+I don't know why you want to, maybe you want to see the results turning out the same, maybe you want to make sure some random guy named slemsvamp isnt' CHEATING?!?!? All jokes aside, I haven't gone to any lengths to make my code all that easy to run. You'll have to make sure you create an input-folder according to the path, or change my code, but you'll see that all of the days are hardcoded to read files from a certain place. I typically change this from day01-sample.txt and day01-input.txt depending on what I want to run as input. You get the idea.
 
 ## Diary
 # - Day 01 to Day 08 -
