@@ -3,6 +3,8 @@
 ## Introduction
 In short, I'm just having a bit of fun playing around in C. My code won't be very optimized, it won't be written fast and I'm winning no prizes for the code itself. I am only leaning on the C standard library. I have made my own lexer.h that I use, it was not written specifically for Advent of Code, but I like using it for it.
 
+I have a define called SILENT which is not very user-friendly. It is just an easy way for me to leave my logging around but not have them in my result runs. I don't expect anyone to USE my code, but I felt like I wanted to explain myself there.
+
 ## Compiling
 I compile with **Microsoft (R) C/C++ Optimizing Compiler Version 19.12.25835 for x64**.
 (*I noticed that I'm suddenly using an older compiler for some reason, haven't bothered checking why..*)
@@ -41,7 +43,8 @@ Result Part 2: 73074886 (1 ms, 2875751 cycles passed)
 Result Part 1: 22897, Result Part 2: 5095824 (0 ms, 1330647 cycles passed)
 
 - Day 05 -
-Results Missing in Action
+Result Part 1: 240320250 (0 ms, 1219871 cycles passed)
+Result Part 2: 28580589 (0 ms, 1016338 cycles passed)
 
 - Day 06 -
 Result Part 1: 140220 (0 ms, 381469 cycles passed)
@@ -54,4 +57,8 @@ Result Part 2: 249620106 (2 ms, 6506961 cycles passed)
 - Day 08 -
 Result Part 1: 13019 (0 ms, 726504 cycles passed)
 Result Part 2: 13524038372771 (6 ms, 15945908 cycles passed)
+
+- Day 09 -
+Result Part 1: 1581679977 (0 ms, 175749 cycles passed)
+Result Part 2: 889 (0 ms, 158431 cycles passed)
 ```

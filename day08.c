@@ -1,3 +1,5 @@
+#define SILENT
+
 #include "common.h"
 #include "lexer.h"
 
@@ -119,7 +121,7 @@ all_end_with_z_or_all_cadences_found(choice *choices, u64 count, u64 *cadences, 
         if (choices[index].key[2] == 'Z' && cadences[index] == 0)
         {
             cadences[index] = turn;
-            //printf("Cadence found for index %lld on turn %lld.\r\n", index, turn);
+            log("Cadence found for index %lld on turn %lld.\r\n", index, turn);
         }
 
     b32 cadencesDone = true;
@@ -189,7 +191,7 @@ part_2(instructions instr)
     {
         while (!is_divisible_by(cadences[index], divisor) && divisor < cadences[index])
             divisor++;
-        //printf("divisor for index %lld is %lld\r\n", index, divisor);
+        log("divisor for index %lld is %lld\r\n", index, divisor);
         divisors[index] = divisor;
         divisor = 2;
     }

@@ -1,7 +1,7 @@
+#define SILENT
+
 #include "common.h"
 #include "lexer.h"
-
-// #define WITH_DEBUG_PRINT
 
 typedef struct game
 {
@@ -78,13 +78,11 @@ run_game(file_data file, b32 withLocalMax)
         
         if (is_game_valid(shown))
         {
-#ifdef WITH_DEBUG_PRINT
-            printf("Game %i is valid, red: %i, green: %i, blue: %i\r\n", id, shown.red, shown.green, shown.blue);
-#endif
+            log("Game %i is valid, red: %i, green: %i, blue: %i\r\n", id, shown.red, shown.green, shown.blue);
             validGameSum += (u32)id;
         }
-#ifdef WITH_DEBUG_PRINT
-        else printf("Game %i is invalid, red: %i, green: %i, blue: %i\r\n", id, shown.red, shown.green, shown.blue);
+#ifndef SILENT
+        else log("Game %i is invalid, red: %i, green: %i, blue: %i\r\n", id, shown.red, shown.green, shown.blue);
 #endif
 
         if (withLocalMax)

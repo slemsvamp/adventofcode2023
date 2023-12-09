@@ -1,7 +1,7 @@
+#define SILENT
+
 #include "common.h"
 #include "lexer.h"
-
-// #define WITH_DEBUG_PRINT
 
 typedef struct poi
 {
@@ -84,17 +84,13 @@ create_schematic(file_data file, u64 width, u64 height)
         {
             assert(schema.numbers.count < schema.numbers.capacity);
             schema.numbers.items[schema.numbers.count++] = (poi) { .token = token, .x = x, .y = y };
-#ifdef WITH_DEBUG_PRINT
-            printf("Found %.*s at x=%zu,y=%zu\r\n", token.length, token.text, x, y);
-#endif
+            log("Found %.*s at x=%zu,y=%zu\r\n", token.length, token.text, x, y);
         }
         else if (token.type != LEXER_TOKEN_TYPE_period)
         {
             assert(schema.signs.count < schema.signs.capacity);
             schema.signs.items[schema.signs.count++] = (poi) { .token = token, .x = x, .y = y };
-#ifdef WITH_DEBUG_PRINT
-            printf("Found '%.*s' at x=%zu,y=%zu\r\n", token.length, token.text, x, y);
-#endif
+            log("Found '%.*s' at x=%zu,y=%zu\r\n", token.length, token.text, x, y);
         }
         
         token = lexer_get_token(&tokenizer);
@@ -127,9 +123,7 @@ check_schematic(schematic schema, b8 gearRatioMode)
                     if (poiNumber.y > poiSign.y + 1)
                         break;
 
-#ifdef WITH_DEBUG_PRINT
-                    printf("Comparing gear x=%i,y=%i with number x=%i,y=%i,l=%zu\r\n", poiSign.x, poiSign.y, poiNumber.x, poiNumber.y, poiNumber.token.length);
-#endif
+                    log("Comparing gear x=%i,y=%i with number x=%i,y=%i,l=%zu\r\n", poiSign.x, poiSign.y, poiNumber.x, poiNumber.y, poiNumber.token.length);
                     
                     if (within_distance(poiSign, poiNumber))
                     {
@@ -148,9 +142,7 @@ check_schematic(schematic schema, b8 gearRatioMode)
                     s32 gearProductB = atoi(adjacent[1].token.text);
                     assert(gearProductA > 0);
                     assert(gearProductB > 0);
-#ifdef WITH_DEBUG_PRINT
-                    printf("Found %i and %i\r\n", gearProductA, gearProductB);
-#endif
+                    log("Found %i and %i\r\n", gearProductA, gearProductB);
                     result += (u64)(gearProductA * gearProductB);
                 }
             }

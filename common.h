@@ -22,6 +22,11 @@
 	}
 #endif
 
+#ifndef SILENT
+    #define log(...) printf(__VA_ARGS__)
+#else
+    #define log(...)
+#endif
 #define debug_log(...) fprintf(stdout, __VA_ARGS__)
 #define error_log(...) fprintf(stdout, __VA_ARGS__)
 

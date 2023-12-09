@@ -1,3 +1,5 @@
+#define SILENT
+
 #include "common.h"
 #include "lexer.h"
 
@@ -206,14 +208,16 @@ parse_hand(char *line, parse_hands_mode mode)
     return result;
 }
 
-// void
-// print_hand(hand h)
-// {
-//     printf("Hand: ");
-//     for (u32 i = 0; i < 5; i++)
-//         printf("%c", h.cards[i]);
-//     printf(", %lld -> %s\r\n", h.bid, hand_type_names[h.type]);
-// }
+#ifndef SILENT
+void
+print_hand(hand h)
+{
+    log("Hand: ");
+    for (u32 i = 0; i < 5; i++)
+        log("%c", h.cards[i]);
+    log(", %lld -> %s\r\n", h.bid, hand_type_names[h.type]);
+}
+#endif
 
 game
 parse_hands(parse_hands_mode mode)
@@ -288,7 +292,7 @@ calculate_game(game entireGame)
     // 2. SORTING BY RANK
     for (u64 byHandTypeIndex = HAND_TYPE_COUNT - 1; byHandTypeIndex >= 0 && byHandTypeIndex < HAND_TYPE_COUNT; byHandTypeIndex--)
     {
-        // printf("Analyzing '%s':\r\n", hand_type_names[byHandTypeIndex]);
+        // log("Analyzing '%s':\r\n", hand_type_names[byHandTypeIndex]);
 
         u64 byHandTypeCount = handsByTypeCount[byHandTypeIndex];
         if (byHandTypeCount > 1)
@@ -303,9 +307,11 @@ calculate_game(game entireGame)
                         swap_hands(hands + playhead, hands + playhead + 1);
                 endIndex--;
             }
-            // printf("Sorted.\r\n");
+            log("Sorted.\r\n");
         }
-        // else printf("No need to sort, too few examples.\r\n");
+#ifndef SILENT
+        else log("No need to sort, too few examples.\r\n");
+#endif
 
     }
 
@@ -319,8 +325,10 @@ calculate_game(game entireGame)
         for (u64 byHandIndex = 0; byHandIndex < handsByTypeCount[byHandTypeIndex]; byHandIndex++)
         {
             rank++;
-            // printf("Rank: %lld, ", rank);
-            // print_hand(hands[byHandIndex]);
+            log("Rank: %lld, ", rank);
+#ifndef SILENT
+            print_hand(hands[byHandIndex]);
+#endif
             result += rank * hands[byHandIndex].bid;
         }
     }
