@@ -39,4 +39,12 @@ Results Missing in Action
 - Day 06 -
 Result Part 1: 140220 (0 ms, 381469 cycles passed)
 Result Part 2: 39570185 (0 ms, 7397 cycles passed)
+
+- Day 07 -
+Result Part 1: 251106089 (2 ms, 5934431 cycles passed)
+Result Part 2: 249620106 (2 ms, 6506961 cycles passed)
+
+- Day 08 -
+Result Part 1: 13019 (0 ms, 726504 cycles passed)
+Result Part 2: 13524038372771 (6 ms, 15945908 cycles passed)
 ```
