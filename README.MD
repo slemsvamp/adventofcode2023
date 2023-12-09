@@ -14,6 +14,13 @@ Optimized:
 cl -MTd -nologo -Gm- -O3 -Oi -WX -W0 -wd4100 -FC -Z7 -D_CRT_SECURE_NO_WARNINGS day01.c /link -opt:ref user32.lib
 ```
 
+## Diary
+# - Day 01 to Day 08 -
+I haven't really had anything to say, for some reason day 5 is sticking out at me like a soar thumb.
+
+# - Day 09 -
+I have to say, second part solutions like "reverse the input" just feels cheeky but, isolated, perfectly fine.
+
 # Benchmarks (approximates)
 I'm using clock() for the time, basically record the clock() timestamp difference and multiply by 1000 and divide by CLOCKS_PER_SEC (which is 1000 on my end), and this will result in 0 ms when it's faster than a millisecond so it will show up as 0. I use __rdtsc() from <windows.h> to count cycles passed. As far as I know this is not cycles that MY executable used, it's how many passed since the timestamps, this means it varies a lot because of how much work windows needs the CPU to do in the background. In practice it's more of a timestamp than a clock-efficiency measurement.
 
