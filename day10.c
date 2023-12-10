@@ -1,12 +1,16 @@
+#define SILENT
+
 #include "common.h"
 #include "lexer.h"
 
 // TODO: we can refactor visited into a flag, connections can become flags, we keep the connection flags but rename the enum to FLAG_CONNECTION_north etc and then att FLAG_VISITED
+// same with enclosed
 typedef struct field
 {
     char *data;
     char *connections;
     char *visited;
+    char *enclosed;
     u64 rows;
     u64 columns;
     u64 startX;
@@ -26,6 +30,15 @@ char *_connection_names[] =
 {
     "north", "east", "south", "west"
 };
+
+connection _connections[CONNECTION_COUNT] = { CONNECTION_north, CONNECTION_east, CONNECTION_south, CONNECTION_west };
+connection _oppositeConnections[CONNECTION_COUNT] = { CONNECTION_south, CONNECTION_west, CONNECTION_north, CONNECTION_east };
+s32 _directionsX[CONNECTION_COUNT] = { 0, 1, 0, -1 };
+s32 _directionsY[CONNECTION_COUNT] = { -1, 0, 1, 0 };
+
+// TODO: this is looking to the LEFT in the direction, switch places with -1 and 1 in these to look at RIGHT instead, need to solve this
+s32 _directionsEnclosedX[CONNECTION_COUNT] = { -1, 0, 1, 0 };
+s32 _directionsEnclosedY[CONNECTION_COUNT] = { 0, -1, 0, 1 };
 
 field
 read_field()
@@ -90,7 +103,10 @@ read_field()
                 connectionsBuffer[writeIndex] = 0;
             break;
             case 'S':
-                startX = writeIndex % columns;
+                if (columns > 0)
+                    startX = writeIndex % columns;
+                else
+                    startX = writeIndex;
                 startY = rows;
             break;
         }
@@ -118,6 +134,7 @@ read_field()
         .data = calloc(rows * columns, sizeof(char)),
         .connections = calloc(rows * columns, sizeof(char)),
         .visited = calloc(rows * columns, sizeof(char)),
+        .enclosed = calloc(rows * columns, sizeof(char)),
         .rows = rows,
         .columns = columns,
         .startX = startX,
@@ -133,6 +150,7 @@ read_field()
 void
 print_field(field fld)
 {
+#ifndef SILENT
     log("------------------------------------------------------------------------------------------------------------\r\n");
     for (u32 r = 0; r < fld.rows; r++)
     {
@@ -143,11 +161,13 @@ print_field(field fld)
     log("------------------------------------------------------------------------------------------------------------\r\n");
     log("S: X%lld/Y%lld\r\n", fld.startX, fld.startY);
     log("CONNECTIONS: %d\r\n", fld.connections[fld.startY * fld.columns + fld.startX]);
+#endif
 }
 
 void
 print_field_visited(field fld)
 {
+#ifndef SILENT
     log("------------------------------------------------------------------------------------------------------------\r\n");
     for (u32 r = 0; r < fld.rows; r++)
     {
@@ -161,19 +181,43 @@ print_field_visited(field fld)
     log("------------------------------------------------------------------------------------------------------------\r\n");
     log("S: X%lld/Y%lld\r\n", fld.startX, fld.startY);
     log("CONNECTIONS: %d\r\n", fld.connections[fld.startY * fld.columns + fld.startX]);
+#endif
+}
+
+void
+print_field_enclosed(field fld)
+{
+#ifndef SILENT
+    log("------------------------------------------------------------------------------------------------------------\r\n");
+    for (u32 r = 0; r < fld.rows; r++)
+    {
+        for (u32 c = 0; c < fld.columns; c++)
+            if (fld.enclosed[r * fld.columns + c])
+                log("X");
+            else
+                log(".");
+        log("\r\n");
+    }
+    log("------------------------------------------------------------------------------------------------------------\r\n");
+    log("S: X%lld/Y%lld\r\n", fld.startX, fld.startY);
+    log("CONNECTIONS: %d\r\n", fld.connections[fld.startY * fld.columns + fld.startX]);
+#endif
+}
+
+b32
+is_within_field(u64 columns, u64 rows, s32 x, s32 y)
+{
+    return x >= 0 && y >= 0 && x < columns && y < rows;
 }
 
 u64
 traverse_field(field fld)
 {
-    connection connections[CONNECTION_COUNT] = { CONNECTION_north, CONNECTION_east, CONNECTION_south, CONNECTION_west };
-    s32 directionsX[CONNECTION_COUNT] = { 0, 1, 0, -1 };
-    s32 directionsY[CONNECTION_COUNT] = { -1, 0, 1, 0 };
-
     s64 x = (s64)fld.startX;
     s64 y = (s64)fld.startY;
     b32 firstStep = true;
     u64 steps = 0;
+    u64 previousConnection = 0;
 
     while (firstStep || !(x == fld.startX && y == fld.startY))
     {
@@ -182,32 +226,123 @@ traverse_field(field fld)
 
         for (u64 connectionIndex = 0; connectionIndex < CONNECTION_COUNT; connectionIndex++)
         {
-            connection currentConnection = connections[connectionIndex];
+            connection currentConnection = _connections[connectionIndex];
             
             if ((fld.connections[y * fld.columns + x] & currentConnection) == 0)
                 continue;
 
-            s32 newX = x + directionsX[connectionIndex];
-            s32 newY = y + directionsY[connectionIndex];
+            s32 newX = x + _directionsX[connectionIndex];
+            s32 newY = y + _directionsY[connectionIndex];
+
+            if ((currentConnection == CONNECTION_north && previousConnection == CONNECTION_south)
+                || (currentConnection == CONNECTION_east && previousConnection == CONNECTION_west)
+                || (currentConnection == CONNECTION_south && previousConnection == CONNECTION_north)
+                || (currentConnection == CONNECTION_west && previousConnection == CONNECTION_east))
+                continue;
 
             if (fld.startX == newX && fld.startY == newY)
             {
                 x = newX;
                 y = newY;
+                previousConnection = currentConnection;
                 break;
             }
 
-            if (fld.visited[newY * fld.columns + newX])
-                continue;
-            
             x = newX;
             y = newY;
+            previousConnection = currentConnection;
             break;
         }
         
         steps++;
     }
+
     return steps;
+}
+
+u64
+find_enclosed_areas(field fld)
+{
+    s64 x = (s64)fld.startX;
+    s64 y = (s64)fld.startY;
+    b32 firstStep = true;
+    u64 steps = 0;
+
+    u64 previousConnection = 0;
+
+    while (firstStep || !(x == fld.startX && y == fld.startY))
+    {
+        firstStep = false;
+
+        for (u64 connectionIndex = 0; connectionIndex < CONNECTION_COUNT; connectionIndex++)
+        {
+            connection currentConnection = _connections[connectionIndex];
+            connection availableConnections = fld.connections[y * fld.columns + x];
+
+            // if we have a connection this way or not, else continue
+            if ((availableConnections & currentConnection) == 0)
+                continue;
+
+            s32 newX = x + _directionsX[connectionIndex];
+            s32 newY = y + _directionsY[connectionIndex];
+
+            // no backtracking
+            if ((currentConnection == CONNECTION_north && previousConnection == CONNECTION_south) || (currentConnection == CONNECTION_east && previousConnection == CONNECTION_west)
+                || (currentConnection == CONNECTION_south && previousConnection == CONNECTION_north) || (currentConnection == CONNECTION_west && previousConnection == CONNECTION_east))
+                continue;
+
+            if (fld.startX == newX && fld.startY == newY)
+            {
+                x = newX;
+                y = newY;
+                previousConnection = currentConnection;
+                break;
+            }
+
+            if (!previousConnection) previousConnection = _oppositeConnections[_connections[connectionIndex]];
+
+            s32 oppositeConnectionValue = previousConnection == 1 ? 4 : previousConnection == 2 ? 8 : previousConnection == 4 ? 1 : previousConnection == 8 ? 2 : 0;
+            connection checkConnections = (availableConnections - oppositeConnectionValue) | previousConnection;
+
+            for (u64 availableConnectionIndex = 0; availableConnectionIndex < CONNECTION_COUNT; availableConnectionIndex++)
+            {
+                // TODO: maybe this is where we could just implement wether we group in/out or at least have set the appropriate left/right strategy
+                if ((checkConnections & _connections[availableConnectionIndex]) > 0)
+                {
+                    s32 enclosedDirectionX = _directionsEnclosedX[availableConnectionIndex];
+                    s32 enclosedDirectionY = _directionsEnclosedY[availableConnectionIndex];
+
+                    u64 stepsEnclosedCheck = 1;
+                    s32 enclosedX = x + (enclosedDirectionX * stepsEnclosedCheck);
+                    s32 enclosedY = y + (enclosedDirectionY * stepsEnclosedCheck);
+
+                    while (is_within_field(fld.columns, fld.rows, enclosedX, enclosedY) && fld.visited[enclosedY * fld.columns + enclosedX] == 0)
+                    {
+                        fld.enclosed[enclosedY * fld.columns + enclosedX] = 1;
+
+                        enclosedX = x + (enclosedDirectionX * stepsEnclosedCheck);
+                        enclosedY = y + (enclosedDirectionY * stepsEnclosedCheck);
+
+                        stepsEnclosedCheck++;
+                    }
+                }
+            }
+
+            x = newX;
+            y = newY;
+            previousConnection = currentConnection;
+            break;
+        }
+
+        steps++;
+    }
+
+    u64 result = 0;
+
+    for (u64 playhead = 0; playhead < fld.rows * fld.columns; playhead++)
+        result += fld.enclosed[playhead];
+
+    return result;
 }
 
 u64
@@ -220,9 +355,11 @@ part_1(field fld)
 u64
 part_2(field fld)
 {
-    // field is already traversed, look for fills
     print_field_visited(fld);
-    return 0;
+    u64 result = find_enclosed_areas(fld);
+    print_field_enclosed(fld);
+
+    return result;
 }
 
 u32
@@ -242,8 +379,6 @@ main(s32 argumentCount, char *arguments[])
 
     clock_t endTime = clock();
     u64 endCycles = __rdtsc();
-
-    // 766 too high
 
     debug_log("- Day 10 -\n");
     debug_log("Result Part 1: %lld (%d ms, %lld cycles passed)\n", resultPart1, (part1Time - startTime) * 1000 / CLOCKS_PER_SEC, (part1Cycles - startCycles));

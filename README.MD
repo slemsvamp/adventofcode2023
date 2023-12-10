@@ -64,4 +64,8 @@ Result Part 2: 13524038372771 (6 ms, 15945908 cycles passed)
 - Day 09 -
 Result Part 1: 1581679977 (0 ms, 175749 cycles passed)
 Result Part 2: 889 (0 ms, 158431 cycles passed)
+
+- Day 10 -
+Result Part 1: 6690 (0 ms, 301121 cycles passed)
+Result Part 2: 525 (0 ms, 480791 cycles passed)
 ```
