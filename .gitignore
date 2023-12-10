@@ -4,3 +4,5 @@ input/
 misc/
 .remedybg/
 *.bat
+template.c
+create.*
