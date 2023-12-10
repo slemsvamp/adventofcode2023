@@ -26,6 +26,9 @@ I haven't really had anything to say, for some reason day 5 is sticking out at m
 # - Day 09 -
 I have to say, second part solutions like "reverse the input" just feels cheeky but, isolated, perfectly fine.
 
+# - Day 10 -
+I am not really happy with the fact that the solution requires manual change if the input would change. I had to switch wether I check on the right side in the direction or left to suit the input. This current one solves MY input, but it would not work for all. I need to go back and fix this at some point, but not today!
+
 # Benchmarks (approximates)
 I'm using clock() for the time, basically record the clock() timestamp difference and multiply by 1000 and divide by CLOCKS_PER_SEC (which is 1000 on my end), and this will result in 0 ms when it's faster than a millisecond so it will show up as 0. I use __rdtsc() from <windows.h> to count cycles passed. As far as I know this is not cycles that MY executable used, it's how many passed since the timestamps, this means it varies a lot because of how much work windows needs the CPU to do in the background. In practice it's more of a timestamp than a clock-efficiency measurement.
 
