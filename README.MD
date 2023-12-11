@@ -29,6 +29,9 @@ I have to say, second part solutions like "reverse the input" just feels cheeky 
 # - Day 10 -
 I am not really happy with the fact that the solution requires manual change if the input would change. I had to switch wether I check on the right side in the direction or left to suit the input. This current one solves MY input, but it would not work for all. I need to go back and fix this at some point, but not today!
 
+# - Day 11 -
+I'm not happy again, I don't want to make so many enumerations through series, but I had a bit of time-crunch today even if I said I shouldn't stress this years AoC in any way, not competing or anything. But yeah, maybe revisiting this one for optimizations, maybe forgetting about it...
+
 # Benchmarks (approximates)
 I'm using clock() for the time, basically record the clock() timestamp difference and multiply by 1000 and divide by CLOCKS_PER_SEC (which is 1000 on my end), and this will result in 0 ms when it's faster than a millisecond so it will show up as 0. I use __rdtsc() from <windows.h> to count cycles passed. As far as I know this is not cycles that MY executable used, it's how many passed since the timestamps, this means it varies a lot because of how much work windows needs the CPU to do in the background. In practice it's more of a timestamp than a clock-efficiency measurement.
 
@@ -71,4 +74,8 @@ Result Part 2: 889 (0 ms, 158431 cycles passed)
 - Day 10 -
 Result Part 1: 6690 (0 ms, 301121 cycles passed)
 Result Part 2: 525 (0 ms, 480791 cycles passed)
+
+- Day 11 -
+Result Part 1: 10077850 (0 ms, 327898 cycles passed)
+Result Part 2: 504715068438 (0 ms, 639963 cycles passed)
 ```
