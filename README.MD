@@ -78,4 +78,17 @@ Result Part 2: 525 (0 ms, 480791 cycles passed)
 - Day 11 -
 Result Part 1: 10077850 (0 ms, 327898 cycles passed)
 Result Part 2: 504715068438 (0 ms, 639963 cycles passed)
+
+- Day 12 -
+Not committed to this branch.
+
+- Day 13 -
+Not committed to this branch.
+
+- Day 14 -
+Not committed to this branch.
+
+- Day 15 -
+Result Part 1: 514025 (0 ms, 815320 cycles passed)
+Result Part 2: 244461 (0 ms, 1925981 cycles passed)
 ```
