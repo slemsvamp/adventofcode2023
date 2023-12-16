@@ -31,6 +31,7 @@
 #define error_log(...) fprintf(stdout, __VA_ARGS__)
 
 #define invalid_code_path assert(!"invalid_code_path")
+#define not_implemented_yet assert(!"not_implemented_yet")
 #define invalid_default_case \
 	default:               \
 	{                      \
