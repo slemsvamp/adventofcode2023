@@ -1,3 +1,5 @@
+#define SILENT
+
 #include "common.h"
 #include "lexer.h"
 
@@ -307,7 +309,7 @@ look_at_mountains()
             }
         }
 
-        printf("%lld: %lld\n", part2Mode, abovies * 100 + lefties);
+        log("%lld: %lld\n", part2Mode, abovies * 100 + lefties);
         
         if (part2Mode == 0)
             res.part1 = abovies * 100 + lefties;

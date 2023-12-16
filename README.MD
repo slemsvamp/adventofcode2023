@@ -97,13 +97,15 @@ Result Part 1: 10077850 (0 ms, 327898 cycles passed)
 Result Part 2: 504715068438 (0 ms, 639963 cycles passed)
 
 - Day 12 -
-Not committed to this branch.
+Result Part 1: 6827 (13 ms, 38405644 cycles passed)
+Part 2 not complete.
 
 - Day 13 -
-Not committed to this branch.
+Result Part 1: 31877 (0 ms, 135 cycles passed)
+Result Part 2: 42996 (0 ms, 89 cycles passed)
 
 - Day 14 -
-Not committed to this branch.
+I bruteforced the result by experimenting and guessing, I will need to rewrite this code.
 
 - Day 15 -
 Result Part 1: 514025 (0 ms, 815320 cycles passed)

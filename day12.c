@@ -1,4 +1,4 @@
-//#define SILENT
+#define SILENT
 
 #include "common.h"
 #include "lexer.h"
@@ -28,7 +28,7 @@ allocate_memory(char *data, u64 size)
 {
     if (!(_allocatedBytes + size < MEMORY_CAPACITY))
     {
-        printf("Tried adding %lld to already allocated %lld byte(s), max allowed is %lld\r\n", size, _allocatedBytes, MEMORY_CAPACITY);
+        log("Tried adding %lld to already allocated %lld byte(s), max allowed is %lld\r\n", size, _allocatedBytes, MEMORY_CAPACITY);
         assert(false && "Out of memory.");
     }
     for (u64 i = 0; i < size; i++)
@@ -136,10 +136,10 @@ parse_records(b32 multiplyByFive)
     return result;
 }
 
-#ifndef SILENT
 void
 print_records(records recs)
 {
+#ifndef SILENT
     for (u64 index = 0; index < recs.count; index++)
     {
         record rec = recs.records[index];
@@ -148,8 +148,8 @@ print_records(records recs)
             log("%lld ", rec.groups[groupIndex]);
         log("\r\n");
     }
-}
 #endif
+}
 
 b32
 valid_arrangement(char *line, u64 lineLength, u64 *groups, u64 groupCount)
@@ -336,6 +336,7 @@ main(s32 argumentCount, char *arguments[])
     debug_log("Result Part 1: %lld (%d ms, %lld cycles passed)\n", resultPart1, (part1Time - startTime) * 1000 / CLOCKS_PER_SEC, (part1Cycles - startCycles));
 
     debug_log("Part 2 not complete.\n");
+    debug_log("\n");
     return 0;
 
     // memoization?

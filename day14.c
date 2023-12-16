@@ -270,6 +270,7 @@ main(s32 argumentCount, char *arguments[])
 
     debug_log("- Day 14 -\n");
     debug_log("I bruteforced the result by experimenting and guessing, I will need to rewrite this code.\n");
+    debug_log("\n");
     return 0;
 
     debug_log("- Day 14 -\n");
