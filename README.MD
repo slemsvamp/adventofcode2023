@@ -32,6 +32,9 @@ I am not really happy with the fact that the solution requires manual change if 
 # - Day 11 -
 I'm not happy again, I don't want to make so many enumerations through series, but I had a bit of time-crunch today even if I said I shouldn't stress this years AoC in any way, not competing or anything. But yeah, maybe revisiting this one for optimizations, maybe forgetting about it...
 
+# - Day 16 -
+Could need optimization. I don't think I'll go back to this one, but I know some optimizations that I could do - more as a note to myself if I really want to put some time into.
+
 # Benchmarks (approximates)
 I'm using clock() for the time, basically record the clock() timestamp difference and multiply by 1000 and divide by CLOCKS_PER_SEC (which is 1000 on my end), and this will result in 0 ms when it's faster than a millisecond so it will show up as 0. I use __rdtsc() from <windows.h> to count cycles passed. As far as I know this is not cycles that MY executable used, it's how many passed since the timestamps, this means it varies a lot because of how much work windows needs the CPU to do in the background. In practice it's more of a timestamp than a clock-efficiency measurement.
 
@@ -78,4 +81,21 @@ Result Part 2: 525 (0 ms, 480791 cycles passed)
 - Day 11 -
 Result Part 1: 10077850 (0 ms, 327898 cycles passed)
 Result Part 2: 504715068438 (0 ms, 639963 cycles passed)
+
+- Day 12 -
+Not committed to this branch.
+
+- Day 13 -
+Not committed to this branch.
+
+- Day 14 -
+Not committed to this branch.
+
+- Day 15 -
+Result Part 1: 514025 (0 ms, 815320 cycles passed)
+Result Part 2: 244461 (0 ms, 1925981 cycles passed)
+
+- Day 16 -
+Result Part 1: 7472 (2 ms, 8036858 cycles passed)
+Result Part 2: 7716 (211 ms, 612741784 cycles passed)
 ```

@@ -31,6 +31,7 @@
 #define error_log(...) fprintf(stdout, __VA_ARGS__)
 
 #define invalid_code_path assert(!"invalid_code_path")
+#define not_implemented_yet assert(!"not_implemented_yet")
 #define invalid_default_case \
 	default:               \
 	{                      \
@@ -267,6 +268,24 @@ dict_init(dictionary *dict, u32 slots)
     dict->slots = slots;
     dict->nodes = (dictionary_node**)calloc(slots, sizeof(dictionary_node*));
 }
+
+internal u32
+dict_hash_n(char *key, size_t length)
+{
+    // djb2
+    u32 hash = 5381;
+    u32 c;
+    size_t n = 0;
+
+    while ((c = *key++) && n < length)
+    {
+        hash = ((hash << 5) + hash) + c;
+        n++;
+    }
+
+    return hash;
+}
+
 
 internal u32
 dict_hash(char *key)
