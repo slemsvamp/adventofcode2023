@@ -125,8 +125,14 @@ typedef struct line_history
 
 line_history *_history;
 
-u64
-part_1()
+typedef struct results
+{
+    u64 part1;
+    u64 part2;
+} results;
+
+results
+look_at_mountains()
 {
     mountain_collection mountainCollection = parse_mountains();
 
@@ -134,6 +140,8 @@ part_1()
 
     u64 lefties = 0;
     u64 abovies = 0;
+
+    results res = {0};
 
     for (u64 part2Mode = 0; part2Mode < 2; part2Mode++)
     {
@@ -300,38 +308,34 @@ part_1()
         }
 
         printf("%lld: %lld\n", part2Mode, abovies * 100 + lefties);
+        
+        if (part2Mode == 0)
+            res.part1 = abovies * 100 + lefties;
+        else if (part2Mode == 1)
+            res.part2 = abovies * 100 + lefties;
+        else invalid_code_path;
     }
 
-    return abovies * 100 + lefties;
-}
-
-u64
-part_2()
-{
-    file_data file = read_to_end_of_file("input\\day13-sample.txt");
-    assert(file.size > 0);
-    return 0;
+    return res;
 }
 
 u32
 main(s32 argumentCount, char *arguments[])
 {
+    results res = look_at_mountains();
+
     clock_t startTime = clock();
     u64 startCycles = __rdtsc();
 
-    u64 resultPart1 = part_1();
+    u64 resultPart1 = res.part1;
 
     clock_t part1Time = clock();
     u64 part1Cycles = __rdtsc();
 
-    u64 resultPart2 = part_2();
+    u64 resultPart2 = res.part2;
 
     clock_t endTime = clock();
     u64 endCycles = __rdtsc();
-
-    // 41990 too low
-    // 41996 too low
-    // 73867 too high
 
     debug_log("- Day 13 -\n");
     debug_log("Result Part 1: %lld (%d ms, %lld cycles passed)\n", resultPart1, (part1Time - startTime) * 1000 / CLOCKS_PER_SEC, (part1Cycles - startCycles));

@@ -1,3 +1,5 @@
+#define SILENT
+
 #include "common.h"
 #include "lexer.h"
 
@@ -9,18 +11,18 @@ typedef struct mountain
     u64 width;
 } mountain;
 
-#ifndef SILENT
 void
 draw_mountain(mountain m)
 {
+#ifndef SILENT
     for (int y = 0; y < m.height; y++)
     {
         for (int x = 0; x < m.height; x++)
             log("%c", m.data[y * m.width + x]);
         log("\n");
     }    
-}
 #endif
+}
 
 mountain
 parse_mountain()
@@ -211,7 +213,7 @@ part_2()
         if (!found)
         {
             assert(hashCount < 16384);
-            //printf("RESULT: %lld\n", result);
+            //log("RESULT: %lld\n", result);
             hashes[hashCount] = mountainHash;
             results[hashCount] = result;
             hashCount++;
@@ -221,17 +223,17 @@ part_2()
         if (cycleWeLastMadeANewHashOn >= 0 && cycle - cycleWeLastMadeANewHashOn > 10)
         {
             // u64 cyclesToRepeat = hashCount;
-            // printf("CYCLES!! %lld\n", hashCount);
+            // log("CYCLES!! %lld\n", hashCount);
             // for (u64 r = 0; r < hashCount; r++)
             // {
             //     if (results[r] < 90558)
-            //         printf("%lld, ", results[r]);
+            //         log("%lld, ", results[r]);
             // }
-            // printf("\b\b\n");
+            // log("\b\b\n");
             // return results[139];
 
             if (result == 90551)
-                printf("90551 cycle: %lld\n", cycle);
+                log("90551 cycle: %lld\n", cycle);
         }
 
         // mountain_tilt(&m);
@@ -264,23 +266,11 @@ main(s32 argumentCount, char *arguments[])
     clock_t endTime = clock();
     u64 endCycles = __rdtsc();
 
-    // 90506 not the right answer
-    // 90513 not the right answer
-    // 90523 not the right answer
+    // ABSOLUTELY BRUTEFORCED THIS ONE... but i was tired :D a lot at work - will have to rewrite it all some day.
 
-    // 90574 too high
-    // 90558 too high
-    // 90602 too high
-
-/*
-    try:
-    90536
-      90551 !!!
-    90555
-    90557
-*/
-
-    // ABSOLUTELY BRUTEFORCED THIS ONE... but i was tired :D a lot at work, pls don't push this one.. >_>
+    debug_log("- Day 14 -\n");
+    debug_log("I bruteforced the result by experimenting and guessing, I will need to rewrite this code.\n");
+    return 0;
 
     debug_log("- Day 14 -\n");
     debug_log("Result Part 1: %lld (%d ms, %lld cycles passed)\n", resultPart1, (part1Time - startTime) * 1000 / CLOCKS_PER_SEC, (part1Cycles - startCycles));

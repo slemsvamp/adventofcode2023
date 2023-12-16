@@ -33,14 +33,14 @@ allocate_memory(char *data, u64 size)
     }
     for (u64 i = 0; i < size; i++)
         _memory[_allocatedBytes+i] = data[i];
-    //memcpy(_memory + _allocatedBytes, data, size);
+
     char *result = _memory + _allocatedBytes;
     _allocatedBytes += size + 1;
     return result;
 }
 
 records
-parse_records(b32 normalMode)
+parse_records(b32 multiplyByFive)
 {
     records result = {0};
     
@@ -104,8 +104,7 @@ parse_records(b32 normalMode)
     memcpy(result.records, recordBuffer, recordCount * sizeof(record));
     result.count = recordCount;
 
-    // TODO: i got tired, forgive me. i feel bad as it is. i have excuses. many in fact.
-    if (!normalMode)
+    if (multiplyByFive)
     {
         for (u64 index = 0; index < result.count; index++)
         {
@@ -129,18 +128,6 @@ parse_records(b32 normalMode)
                     lineDest[rec.lineLength] = '?';
                 memcpy((char *)new.groups + iteration * rec.groupCount * sizeof(u64), rec.groups, rec.groupCount * sizeof(u64));
             }
-            
-            // printf("old: \"%.*s\" group: ", rec.lineLength, rec.line);
-            // for (u64 i = 0; i < rec.groupCount; i++)
-            //     printf("%lld ", rec.groups[i]);
-            // printf("\b\r\n");
-            // printf("new: \"%.*s\"\r\n", new.lineLength, new.line);
-            // for (u64 i = 0; i < new.groupCount; i++)
-            //     printf("%lld ", new.groups[i]);
-            // printf("\b\r\n");
-            
-            // free(rec.groups);
-            // free(rec.line);
 
             result.records[index] = new;
         }
@@ -194,10 +181,7 @@ valid_arrangement(char *line, u64 lineLength, u64 *groups, u64 groupCount)
     for (u64 index = playhead; index < lineLength; index++, playhead++)
     {
         if (line[index] != '.')
-        {
-            //log("invalidated arrangement because there were ? or # left\r\n");
             return false;
-        }
     }
     
     return true;
@@ -256,7 +240,7 @@ recursive_arrangement_check(u64 playhead, char *line, u64 lineLength, u64 *group
         u64 backtrackAllocation = _allocatedBytes;
         char *damagedVersion = allocate_memory(line, lineLength);
         damagedVersion[index] = '#';
-        //b32 breakpoint = strcmp(damagedVersion, ".#...#....###.");
+
         result += recursive_arrangement_check(index, damagedVersion, lineLength, groups, groupCount);
         _allocatedBytes = backtrackAllocation;
 
@@ -268,14 +252,6 @@ recursive_arrangement_check(u64 playhead, char *line, u64 lineLength, u64 *group
 
     u64 validity = valid_arrangement(line, lineLength, groups, groupCount);
     
-    if (validity)
-    {
-        // log("We thought '%.*s' looked valid for groups (", lineLength, line);
-        // for (u64 groupIndex = 0; groupIndex < groupCount; groupIndex++)
-        //     log("%lld ", groups[groupIndex]);
-        // log("\b)\r\n");
-    }
-
     return result + validity;
 }
 
@@ -316,12 +292,10 @@ u64
 part_1()
 {
     u64 result = 0;
-    records recs = parse_records(true);
+    records recs = parse_records(false);
     for (u64 recordIndex = 0; recordIndex < recs.count; recordIndex++)
     {
         u64 sum = calculate_arrangements(recs.records[recordIndex]);
-        //log("%lld: allocated bytes: %lld\r\n", recordIndex + 1, _allocatedBytes);
-        //log("record %lld: %lld\r\n", recordIndex + 1, sum);
         result += sum;
         _allocatedBytes = 0;
     }
@@ -332,12 +306,10 @@ u64
 part_2()
 {
     u64 result = 0;
-    records recs = parse_records(false);
+    records recs = parse_records(true);
     for (u64 recordIndex = 0; recordIndex < recs.count; recordIndex++)
     {
         u64 sum = calculate_arrangements(recs.records[recordIndex]);
-        //log("%lld: allocated bytes: %lld\r\n", recordIndex + 1, _allocatedBytes);
-        log("\nrecord %lld: %lld\r\n", recordIndex + 1, sum);
         result += sum;
         _allocatedBytes = 0;
     }
